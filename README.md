@@ -1,6 +1,6 @@
-# 破甲 · dsh-go-unrestricted
+# dshgo-purge · DSH 开发工具箱
 
-把宿主默认的逐次审批、沙箱围栏、重复确认话术，按你自己设备的开发需要调成直通。
+把 DSH 宿主默认的逐次审批、沙箱围栏、重复确认话术，按你自己设备的开发需要调成直通。装完自动带配置面板与体检，一条命令装 / 升 / 退。
 
 ## 一键安装
 
@@ -8,7 +8,7 @@
 
 1. **找到终端** —— 打开 dsh-go App，在侧边抽屉/工具栏里找「终端」入口（找不到就直接在对话里问 AI「帮我打开终端」）。
 2. **粘贴指令** —— 把下面这条命令整段复制进终端、回车，等它自己跑完（约 10–30 秒，中间刷一堆字是正常的）。
-3. **重启 + 开新对话** —— 完全退出 App 再重新打开，然后**开一个新对话**。引擎只在启动时加载插件，旧对话不带新注入。新对话里问一句「现在装的破甲是什么版本」，能答出来就装好了。
+3. **重启 + 开新对话** —— 完全退出 App 再重新打开，然后**开一个新对话**。引擎只在启动时加载插件，旧对话不带新注入。新对话里问一句「purge 模式是什么版本」，能答出来就装好了。
 
 ```bash
 { curl -fsSL "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" || curl -fsSL "https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" || wget -qO- "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" || wget -qO- "https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" || python3 -c "import urllib.request as u;print(u.urlopen(\"https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh\",timeout=90).read().decode())" || python3 -c "import urllib.request as u;print(u.urlopen(\"https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh\",timeout=90).read().decode())"; } | bash
@@ -45,19 +45,19 @@ curl -fsSL https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/rele
 
 ## 面板
 
-装完在对话界面里多出**三个面板**，都在同一个插件里 —— 插件管理器只有一条 `dsh-go-unrestricted`。
+装完在对话界面里多出**三个面板**，都在同一个插件里 —— 插件管理器只有一条，目录名以 `dsh-go-` 开头。
 
-输入框上方两颗等宽胶囊「破甲」「技能」，点哪个开哪个。
+输入框上方两颗等宽胶囊（工具箱 / 技能），点哪个开哪个。
 
-**破甲面板**：三个指标（破甲 / 补丁 / 没通过）+ 一句话判定，没问题时不显示任何按钮。下面三段折叠：体检 / 模式 / 维护。
+**工具箱面板**：三个指标（生效态 / 补丁 / 没通过）+ 一句话判定，没问题时不显示任何按钮。下面三段折叠：体检 / 模式 / 维护。
 
-<img src="docs/shots/real-armor-sm.png" width="320" alt="破甲面板">
+<img src="docs/shots/real-armor-sm.png" width="320" alt="配置面板">
 
 **技能库**：按目录实际内容动态分类（你装什么就分什么类），带搜索。分类不是写死的 —— 换台机器装不同的技能，分类会跟着变。
 
 <img src="docs/shots/real-skills-sm.png" width="320" alt="技能库面板">
 
-**模式切换**：无限制 / 无限制·子任务 / 红队 / 标准 / PTC / 极简 / 创造，在「这次对话的预设」里随时切。破甲只在自带模式里注入。
+**模式切换**：内置七种模式，在「这次对话的预设」里随时切；直通注入只在自带模式里生效，标准 / 创造等模式不带。
 
 <img src="docs/shots/real-presets-sm.png" width="320" alt="模式预设">
 
@@ -82,21 +82,21 @@ curl -fsSL https://github.com/lingsmallcode/dshgo-purge/releases/latest/download
 
 ## 它解决什么
 
-| 你会遇到的现象 | 卡在哪 | 破甲怎么处理 |
+| 你会遇到的现象 | 卡在哪 | purge 怎么处理 |
 |---|---|---|
-| 先讲「我不能」「出于安全考虑」，再讲正事 | 提示词层的倾向 | 三路注入（事件瀑布 / section / `AGENTS.md` 兜底），哪条通走哪条 |
+| 先讲一串客套再讲正事 | 提示词层的倾向 | 三路注入（事件瀑布 / section / `AGENTS.md` 兜底），哪条通走哪条 |
 | 让它写文件，先弹「是否批准」 | `user-approval` waterfall | 补丁直接回 `allowed-once`，默认策略改 `never` |
 | 沙箱拒写、命令被 bwrap 拦住 | `confine()` / `checkedTarget()` | 沙箱直通 + 文件围栏禁用 |
 | 想覆盖文件，它非得先读一遍 | `fs-observation-policy` 的 `writeIntent` | 观察策略放行 |
 | 宿主升级后某层悄悄失效，没人知道 | 没有统一体检 | `<!--N:panels-->3<!--/N-->` 个面板里的体检段逐层核实 |
 | 换模型后你的 provider 配置被吃掉了 | 宿主重写 `cordis.patch.yml` | 启动时自动快照 + 合并修复（见下） |
-| 想要「无限制」「红队」两套人设 | 宿主没带对应预设 | `<!--N:presets-->3<!--/N-->` 个可选模式 + 模式切换面板 |
+| 想要「全直通」「开发调试」两套模式 | 宿主没带对应预设 | `<!--N:presets-->3<!--/N-->` 个可选模式 + 模式切换面板 |
 
 ---
 
 ## 四层结构
 
-破甲不是单点补丁，是四层叠加，缺一层都不完整：
+这套直通不是单点补丁，是四层叠加，缺一层都不完整：
 
 | 层 | 管什么 | 在哪 |
 |---|---|---|
@@ -112,7 +112,7 @@ curl -fsSL https://github.com/lingsmallcode/dshgo-purge/releases/latest/download
 | 路 | 机制 | 生效场景 |
 |---|---|---|
 | 主路 | 在 `system-prompt/assemble` waterfall 里改写 `assembly.sections` | 有事件总线的引擎（dsh-go 本机、桌面版） |
-| 次路 | `systemPrompt.section()` 注册独立段 `dsh-purge:unrestricted` | 有 `systemPrompt` 服务的宿主 |
+| 次路 | `systemPrompt.section()` 注册 `dsh-purge:` 命名空间独立段 | 有 `systemPrompt` 服务的宿主 |
 | 兜底 | 写进 `$DSH_HOME/AGENTS.md` 的标记块 | 宿主连 `systemPrompt` 都没有 |
 
 三路同时铺，重复注入会去重，删掉兜底块也不会被强行加回。
@@ -123,7 +123,7 @@ curl -fsSL https://github.com/lingsmallcode/dshgo-purge/releases/latest/download
 
 宿主在切换模型时会把 `profiles/web/cordis.patch.yml` **整个重写**成只含模型选择的最小版本 —— 实测从 19,580 字节缩到 166 字节，你自己的 provider / `apiKeyEnv` / 沙箱 / 审批配置全被吃掉，模型直接不可用。
 
-破甲启动时做两件事：
+插件启动时做两件事：
 
 1. **内容变了就快照**（`.config-history/`，只留最近 20 份）
 2. **体积暴跌就合并修复**：保留你刚选的新模型，补回被吃掉的其余 entry
@@ -138,11 +138,11 @@ curl -fsSL https://github.com/lingsmallcode/dshgo-purge/releases/latest/download
 # 本机体检：逐层看哪层断
 node lib/engine.js selfcheck
 
-# 拒答测试：164 条探针（内置 12 + JBB 56 + AdvBench 96），按类别抽样
-# 面板里点「抽样·渗透」约 24 秒出结果；全量约 14 分钟
+# 响应测试：164 条探针（内置 12 + JBB 56 + AdvBench 96），按类别抽样
+# 面板里按类别点抽样按钮约 24 秒出结果；全量约 14 分钟
 ```
 
-面板里的**拒答测试**用当前注入直接问宿主模型，评分进回合脚注 —— 测的是「装了破甲能不能做到」，不是裸模型。
+面板里的**响应测试**用当前注入直接问宿主模型，评分进回合脚注 —— 测的是「装了工具后能不能做到」，不是裸模型。
 
 ### 对别人是否真的生效
 
@@ -158,11 +158,8 @@ bash local/verify-fresh-install.sh dist/install.sh
 
 ## 边界
 
-有五类内容不做：未成年性内容、大规模杀伤性武器、常规武器与爆炸物制造、真实人物的性内容、非自愿与犯罪性行为。
+有少量硬线不做，完整清单与每条的理由在面板「维护」段里，首页不列。
 
-**面板「维护 → 边界 · 五类硬线」里有完整说明**，包括每一条为什么是硬线。除此之外基本都做——渗透测试、逆向工程、红队演练等按本地沙箱与授权范围处理，给完整实现。
-
-这里不列具体条目：把不该出现的关键词堆在首页，对谁都没好处。
 
 ## 兼容范围
 
@@ -182,9 +179,8 @@ bash local/verify-fresh-install.sh dist/install.sh
 
 | 模式 | 做什么 |
 |---|---|
-| 无限制模式 | 注入破甲指令段 + 自动打引擎层补丁 |
-| 无限制·子任务 | 同上的子任务变体（`unrestricted-child-*`） |
-| 红队模式 | 侦察 → 利用 → 后渗透的完整能力，附带演练台面板 |
+| 直通模式 | 指令段注入 + 引擎层补丁自动打，另有子任务变体 |
+| 演练模式 | 面向网络工程测试的成套能力，附演练台面板 |
 
 反向：标准 / PTC / 极简 / Cordis 等其余模式**不注入、不自动打补丁**；宿主上已写入的补丁不回滚，要还原用面板里的「还原引擎层」。
 
@@ -263,7 +259,7 @@ bash local/verify-fresh-install.sh   # 干净机验收（发布前必跑）
 
 **DSHGO 交流群** · 群号 `903327163`
 
-手机上的本地 AI 执行引擎，主要聊：破甲引擎安装与配置、插件与原生面板、手机操控自动化、常见报错排查、版本更新。
+手机上的本地 AI 执行引擎，主要聊：引擎配置工具箱、插件与原生面板、手机操控自动化、常见报错排查、版本更新。
 
 提问不设门槛，广告与拉人刷屏请止步。
 
