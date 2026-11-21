@@ -11,7 +11,7 @@
 3. **重启 + 开新对话** —— 完全退出 App 再重新打开，然后**开一个新对话**。引擎只在启动时加载插件，旧对话不带新注入。新对话里问一句「purge 模式是什么版本」，能答出来就装好了。
 
 ```bash
-{ curl -fsSL "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" -m 60 || wget -qO- "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" -T 60 || python3 -c "exec('import urllib.request as u,sys\nfor p in(\"https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh\",\"https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh\"):\n try:\n  sys.stdout.write(u.urlopen(p,timeout=90).read().decode())\n  break\n except Exception:\n  pass')"; } | bash
+{ curl -fsSL "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" -m 60 || wget -qO- "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" -T 60 || python3 -c "import urllib.request as u;print(u.urlopen(\"https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh\",timeout=90).read().decode())" || python3 -c "import urllib.request as u;print(u.urlopen(\"https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh\",timeout=90).read().decode())"; } | bash
 ```
 
 **这一条自带全部自救**（长按即复制）：curl→wget→python3 三级兜底、主站→镜像双源，没有 curl、GitHub 连不上的全新环境都能装（dsh-go 自带 python3，永远有底）。
