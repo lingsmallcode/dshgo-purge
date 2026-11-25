@@ -11,19 +11,6 @@
 3. **重启 + 开新对话** —— 完全退出 App 再重新打开，然后**开一个新对话**。引擎只在启动时加载插件，旧对话不带新注入。新对话里问一句「purge 模式是什么版本」，能答出来就装好了。
 
 ```bash
-{ curl -fsSL "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" -m 60 || wget -qO- "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" -T 60 || python3 -c "import urllib.request as u;print(u.urlopen(\"https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh\",timeout=90).read().decode())" || python3 -c "import urllib.request as u;print(u.urlopen(\"https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh\",timeout=90).read().decode())"; } | bash
-```
-
-**这一条自带全部自救**（长按即复制）：curl→wget→python3 三级兜底、主站→镜像双源，没有 curl、GitHub 连不上的全新环境都能装（dsh-go 自带 python3，永远有底）。
-
-### 环境里没有 curl？
-
-同一条命令确实会自己往后退（curl→wget→python3），但有的系统里 curl 存在却卡住、或者报 `command not found` 看着像失败。
-**如果上面那条没跑起来，直接换成下面任意一条**——它们完全不碰 curl：
-
-**A. 只有 python3（最保险，dsh-go 自带 python3）**
-
-```bash
 python3 -c "
 import urllib.request as u, sys
 for x in ['https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh',
@@ -37,16 +24,41 @@ else: sys.exit('三个源都失败，检查网络')
 " | bash
 ```
 
-**B. 有 wget、没 curl**
+**这条只需要 python3**（dsh-go 的本机环境自带，`/opt/python`，所有用户都有），不碰 curl、不碰 wget：
+主站 → 镜像一 → 镜像二 自动切换，并且**只接受以 `#!` 开头的响应**——镜像挂掉时它常回一段 HTML 错误页，旧写法会把这页喂给 bash，看起来是一堆乱码报错。
+
+**装完完全退出 App 再打开** —— 宿主只在启动时加载插件。
+
+<details>
+<summary>我有 curl，想用短的那条</summary>
 
 ```bash
-{ wget -qO- "https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" -T 60 || wget -qO- "https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh" -T 60; } | bash
+curl -fsSL https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh | bash
 ```
 
-**C. GitHub 打不开、只有 python3**：把 A 里三个 URL 的顺序倒过来（镜像在前）再跑。
+</details>
 
-> A 的写法做过实测：三源逐个试、只接受以 `#!` 开头的响应（防镜像回一段 HTML 被当脚本执行），全失败才退出。
-**装完完全退出 App 再打开** —— 宿主只在启动时加载插件。
+<details>
+<summary>GitHub 打不开？用镜像（同一份脚本）</summary>
+
+```bash
+curl -fsSL https://ghproxy.net/https://github.com/lingsmallcode/dshgo-purge/releases/latest/download/install.sh | bash
+```
+
+没有 curl 时，把主命令里三个 URL 的顺序倒过来（镜像在前）再跑，效果相同。
+
+</details>
+
+<details>
+<summary>为什么不再用「curl→wget→python3」那条长命令</summary>
+
+- dsh-go 的默认环境**有 curl、没有 wget**，wget 那一段等于白写；
+- 没有 curl 的机器会先打印 `command not found` 再往后走，人看到就以为失败了；
+- 长字符串少一个引号就报语法错，不好排查。
+
+现在这条只依赖 python3，出错时会明确告诉你「三个源都失败，检查网络」。
+
+</details>
 
 <details>
 <summary>GitHub 慢？用镜像</summary>
